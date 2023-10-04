@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.30/Tone.js"></script>
+</head>
+<body>
+    <button id="start-stop">Start</button>
+    <input id="cutoff" type="range" min="20" max="20000" value="1000">
+    <input id="resonance" type="range" min="0" max="100" value="0">
+    <input id="envelope" type="range" min="0" max="1" value="0.5" step="0.01">
+    <input id="decay" type="range" min="0" max="1" value="0.5" step="0.01">
+    <input id="accent" type="range" min="0" max="1" value="0.5" step="0.01">
+    <script src="main.js"></script>
+    <script src="synth.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

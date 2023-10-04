@@ -1,0 +1,11 @@
+{
+  "scripts": {
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "tone": "^14.7.77"
+  },
+  "devDependencies": {
+    "webpack-cli": "^5.1.4"
+  }
+}
