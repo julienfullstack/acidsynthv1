@@ -12,7 +12,7 @@
     transition: background-color 0.2s ease;
 }
 
-/* Style for the control panel */
+
 .controls {
     margin-top: 20px;
     padding: 20px;
@@ -48,4 +48,8 @@ input[type="number"] {
 
 .start-button:hover {
     background-color: #0056b3;
+}
+
+.scale-row .step-button.current-column {
+    background-color: green;
 }

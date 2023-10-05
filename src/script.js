@@ -7,9 +7,9 @@ let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
 let cutoff = 500;
-let resonance = 4; 
-let decay = 30; 
-let accent = 70; 
+let resonance = 4;
+let decay = 30;
+let accent = 70;
 let slide = 0;
 
 function startAudioContext() {
@@ -110,6 +110,9 @@ window.onload = function () {
                     oscillator.frequency.value = 0;
                 }
                 stepIndex = (stepIndex + 1) % 16;
+
+                // Highlight the currently playing column
+                highlightCurrentColumn();
             }, 60000 / tempo);
         }
     });
@@ -153,6 +156,9 @@ window.onload = function () {
                     oscillator.frequency.value = 0;
                 }
                 stepIndex = (stepIndex + 1) % 16;
+
+                // Highlight the currently playing column
+                highlightCurrentColumn();
             }, 60000 / tempo);
             startStopButton.textContent = 'Stop';
         } else {
@@ -161,4 +167,18 @@ window.onload = function () {
             startStopButton.textContent = 'Start';
         }
     });
+
+    // Function to highlight the currently playing column
+    function highlightCurrentColumn() {
+        const allButtons = document.querySelectorAll('.step-button');
+        allButtons.forEach(button => button.classList.remove('current-column'));
+
+        const scaleRows = document.querySelectorAll('.scale-row');
+        const currentStep = stepIndex % 16;
+
+        scaleRows.forEach((scaleRow) => {
+            const buttons = scaleRow.querySelectorAll('.step-button');
+            buttons[currentStep].classList.add('current-column');
+        });
+    }
 }
