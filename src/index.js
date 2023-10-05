@@ -30,7 +30,8 @@ window.onload = function() {
         button.textContent = 'Step ' + (i + 1);
         button.addEventListener('click', function() {
             const step = i;
-            const frequency = audioContext.frequencyToLogarithm ? audioContext.frequencyToLogarithm('C4') : 261.63; //default to C4 if no frequencyToLogarithm function
+            const frequencyInputElement= document.getElementById('frequency');
+            const frequency = frequencyInputElement.value;
             if (sequence[step] === frequency) {
                 sequence[step] = null;
                 button.style.backgroundColor = '';
@@ -43,7 +44,7 @@ window.onload = function() {
         grid.appendChild(button);
     }
 
-    ['cutoff', 'resonance', 'envelope', 'decay', 'accent','frequency'].forEach(control => {
+    ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.value !== undefined) {
                 gainNode.gain.value = this.value;
@@ -53,7 +54,7 @@ window.onload = function() {
 
     const startStopButton = document.getElementById('start-stop');
     startStopButton.addEventListener('click', function() {
-        if (startStopButton.textContent === 'Start') {
+        if (startStopButton.textContent === 'Start' && stepSequencer.some(value => value !== null)) {
             startAudioContext();
             oscillator = audioContext.createOscillator();
             gainNode = audioContext.createGain();
@@ -61,15 +62,18 @@ window.onload = function() {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
+
             stepInterval = setInterval(() => {
                 const sequenceValue = sequence[stepIndex];
                 oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
                 stepIndex = (stepIndex + 1) % stepSequencer.length;
-            }, 500); //Change the interval as per requirement
+            }, 500); 
             startStopButton.textContent = 'Stop';
         } else {
             clearInterval(stepInterval);
-            oscillator.stop(0);
+            if (oscillator) {
+                oscillator.stop(0);
+            }
             startStopButton.textContent = 'Start';
         }
     });
