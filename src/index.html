@@ -3,26 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TB-303 Emulator</title>
     <link rel="stylesheet" href="styles.css">
-    <title>TB-303 Sequencer</title>
 </head>
 <body>
-    <div id="sequencer-container">
-        <div id="sequencer-grid"></div>
-    </div>
-    <div id="controls">
-        <input type="range" id="cutoff" min="20" max="1000" value="500">
-        <label for="cutoff">Cutoff</label><br>
-        <input type="range" id="resonance" min="0" max="20" value="0">
-        <label for="resonance">Resonance</label><br>
-        <input type="range" id="decay" min="0" max="100" value="50">
-        <label for="decay">Decay</label><br>
+    <div id="sequencer-grid" class="sequencer-grid"></div>
+
+    <div class="controls">
+        <label for="cutoff">Cutoff Frequency:</label>
+        <input type="range" id="cutoff" min="0" max="1000" value="500">
+
+        <label for="resonance">Resonance:</label>
+        <input type="range" id="resonance" min="0" max="10" step="0.1" value="0">
+
+        <label for="decay">Decay:</label>
+        <input type="range" id="decay" min="0" max="1000" value="50">
+
+        <label for="accent">Accent:</label>
         <input type="range" id="accent" min="0" max="100" value="50">
-        <label for="accent">Accent</label><br>
-        <input type="range" id="tempo" min="40" max="240" value="120">
-        <label for="tempo">Tempo</label><br>
-        <button id="start-button">Start</button>
+
+        <label for="slide">Slide:</label>
+        <input type="range" id="slide" min="0" max="24" step="0.1" value="0">
+
+        <label for="tempo">Tempo:</label>
+        <input type="number" id="tempo" min="30" max="300" value="120">
+
+        <button id="start-button" class="start-button">Start</button>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

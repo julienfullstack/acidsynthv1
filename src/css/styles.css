@@ -1,10 +1,11 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
+    background-color:green;
 }
 
 #sequencer-container {
@@ -17,16 +18,12 @@ body {
     align-items: center;
 }
 
-.scale-label {
-    font-weight: bold;
-    margin-right: 10px;
-}
 
 .step-button {
     width: 40px;
     height: 40px;
-    background-color: #eee;
-    border: 1px solid #ccc;
+    background-color: #ececec;
+    border: 1px solid #df0303;
     margin-right: 5px;
     font-size: 12px;
     cursor: pointer;
@@ -49,4 +46,8 @@ body {
 .scale-row {
     display: flex;
     align-items: center;
+}
+
+.active-button {
+    background-color: green;
 }

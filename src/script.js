@@ -1,15 +1,16 @@
 let audioContext = null;
 let oscillator = null;
 let filter = null;
-let stepSequencer = Array(12).fill(Array(16).fill(false)); // Initialize a 12x16 grid with all steps set to false
+let stepSequencer = Array(12).fill(Array(16).fill(false));
 
 let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
-let cutoff = 500; // Initial cutoff frequency
-let resonance = 0; // Initial resonance
-let decay = 50; // Initial decay
-let accent = 50; // Initial accent (filter envelope depth)
+let cutoff = 500;
+let resonance = 4; 
+let decay = 30; 
+let accent = 70; 
+let slide = 0;
 
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -23,15 +24,14 @@ function createTB303Sound() {
 
     oscillator = audioContext.createOscillator();
     filter = audioContext.createBiquadFilter();
-    filter.type = 'lowpass'; // Use a lowpass filter
+    filter.type = 'lowpass';
     filter.Q.value = resonance;
     filter.frequency.value = cutoff;
 
-    oscillator.type = 'sawtooth'; // Use a sawtooth waveform
+    oscillator.type = 'sawtooth';
     oscillator.connect(filter);
     filter.connect(audioContext.destination);
 
-    // Initialize the oscillator frequency to zero
     oscillator.frequency.value = 0;
 
     oscillator.start(0);
@@ -88,6 +88,10 @@ window.onload = function () {
         accent = parseFloat(this.value);
     });
 
+    document.getElementById('slide').addEventListener('input', function () {
+        slide = parseFloat(this.value);
+    });
+
     document.getElementById('tempo').addEventListener('input', function () {
         if (this.value !== undefined) {
             tempo = this.value;
@@ -113,9 +117,14 @@ window.onload = function () {
     function filterEnvelope() {
         const baseFrequency = cutoff;
         const maxFrequency = cutoff + accent * 10;
+
         filter.frequency.setValueAtTime(baseFrequency, audioContext.currentTime);
         filter.frequency.linearRampToValueAtTime(maxFrequency, audioContext.currentTime + decay / 1000);
         filter.frequency.linearRampToValueAtTime(baseFrequency, audioContext.currentTime + decay / 500);
+
+        filter.Q.setValueAtTime(resonance, audioContext.currentTime);
+        filter.Q.linearRampToValueAtTime(resonance * 3, audioContext.currentTime + decay / 1000);
+        filter.Q.linearRampToValueAtTime(resonance, audioContext.currentTime + decay / 500);
     }
 
     function calculateNoteFrequency(scale) {
@@ -123,7 +132,7 @@ window.onload = function () {
             261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25,
             587.33, 659.26, 698.46, 783.99
         ];
-        return scaleFrequencies[scale];
+        return scaleFrequencies[scale] * Math.pow(2, slide / 12);
     }
 
     const startStopButton = document.getElementById('start-button');
@@ -153,4 +162,3 @@ window.onload = function () {
         }
     });
 }
-
