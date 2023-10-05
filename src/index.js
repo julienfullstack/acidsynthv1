@@ -1,28 +1,27 @@
-let synth = null;
-let sequence = null;
+let audioContext = null;
+let sequence = [];
+let oscillator = null;
+let gainNode = null;
+
+let stepIndex = 0;
+let stepInterval = null;
+
+function startAudioContext() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+}
 
 window.onload = function() {
+    startAudioContext();
 
-    synth = new Tone.MonoSynth({
-        oscillator: {
-            type: 'sawtooth'
-        },
-        envelope: {
-            attack: 0.1,
-            decay: 0.2,
-            sustain: 1,
-            release: 0.8
-        }
-    }).toDestination();
+    oscillator = audioContext.createOscillator();
+    gainNode = audioContext.createGain();
 
-    sequence = new Tone.Sequence((time, note) => {
-        if (synth && note !== undefined) synth.triggerAttackRelease(note, '8n', time);
-    }, []);
-
-    Tone.Transport.bpm.value = 120;
-
-    sequence.loop = true;
-    sequence.start();
+    oscillator.type = 'sawtooth';
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
 
     const grid = document.getElementById('grid');
     for (let i = 0; i < 16; i++) {
@@ -30,12 +29,12 @@ window.onload = function() {
         button.textContent = 'Step ' + (i + 1);
         button.addEventListener('click', function() {
             const step = i;
-            const note = 'C4';
-            if (sequence && sequence.values && sequence.values[step] === note) {
-                sequence.values[step] = null;
+            const frequency = audioContext.frequencyToLogarithm ? audioContext.frequencyToLogarithm('C4') : 261.63; //default to C4 if no frequencyToLogarithm function
+            if (sequence[step] === frequency) {
+                sequence[step] = null;
                 button.style.backgroundColor = '';
-            } else if (sequence && sequence.values) {
-                sequence.values[step] = note;
+            } else {
+                sequence[step] = frequency;
                 button.style.backgroundColor = 'blue';
             }
         });
@@ -44,8 +43,8 @@ window.onload = function() {
 
     ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
-            if (synth && synth.filter && this.value !== undefined) {
-                synth.filter.frequency.value = this.value;
+            if (this.value !== undefined) {
+                gainNode.gain.value = this.value;
             }
         });
     });
@@ -53,10 +52,21 @@ window.onload = function() {
     const startStopButton = document.getElementById('start-stop');
     startStopButton.addEventListener('click', function() {
         if (startStopButton.textContent === 'Start') {
-            Tone.Transport.start();
+            startAudioContext();
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            oscillator.type = 'sawtooth';
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start(0);
+            stepInterval = setInterval(() => {
+                oscillator.frequency.value = sequence[stepIndex] || 0;
+                stepIndex = (stepIndex + 1) % sequence.length;
+            }, 500); //Change the interval as per requirement
             startStopButton.textContent = 'Stop';
         } else {
-            Tone.Transport.stop();
+            clearInterval(stepInterval);
+            oscillator.stop(0);
             startStopButton.textContent = 'Start';
         }
     });
