@@ -2,6 +2,7 @@ let audioContext = null;
 let sequence = [];
 let oscillator = null;
 let gainNode = null;
+let stepSequencer = [];
 
 let stepIndex = 0;
 let stepInterval = null;
@@ -35,6 +36,7 @@ window.onload = function() {
                 button.style.backgroundColor = '';
             } else {
                 sequence[step] = frequency;
+                stepSequencer[step] = frequency;
                 button.style.backgroundColor = 'blue';
             }
         });
@@ -60,8 +62,9 @@ window.onload = function() {
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
             stepInterval = setInterval(() => {
-                oscillator.frequency.value = sequence[stepIndex] || 0;
-                stepIndex = (stepIndex + 1) % sequence.length;
+                const sequenceValue = sequence[stepIndex];
+                oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
+                stepIndex = (stepIndex + 1) % stepSequencer.length;
             }, 500); //Change the interval as per requirement
             startStopButton.textContent = 'Stop';
         } else {
