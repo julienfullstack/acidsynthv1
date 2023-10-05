@@ -1,6 +1,8 @@
 let audioContext = null;
-let oscillator = null;
-let filter = null;
+let oscillators = [];
+let filters = [];
+let lfo = null;
+let lfoGain = null;
 let stepSequencer = Array(12).fill(Array(16).fill(false));
 
 let stepIndex = 0;
@@ -11,6 +13,10 @@ let resonance = 4;
 let decay = 30;
 let accent = 70;
 let slide = 0;
+let lfoRate = 0.5;
+let lfoDepth = 100;
+let filter = null; // Declare filter at the higher scope
+let oscillator = null; // Declare oscillator at the higher scope
 
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -22,19 +28,39 @@ function startAudioContext() {
 function createTB303Sound() {
     startAudioContext();
 
-    oscillator = audioContext.createOscillator();
-    filter = audioContext.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.Q.value = resonance;
-    filter.frequency.value = cutoff;
+    oscillators = [];
+    filters = [];
 
-    oscillator.type = 'sawtooth';
-    oscillator.connect(filter);
-    filter.connect(audioContext.destination);
+    for (let i = 0; i < 12; i++) {
+        oscillator = audioContext.createOscillator();
+        filter = audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.Q.value = resonance;
+        filter.frequency.value = cutoff;
 
-    oscillator.frequency.value = 0;
+        oscillator.type = 'sawtooth';
+        oscillator.connect(filter);
+        filter.connect(audioContext.destination);
 
-    oscillator.start(0);
+        oscillator.frequency.value = 0;
+
+        oscillator.start(0);
+
+        oscillators.push(oscillator);
+        filters.push(filter);
+    }
+
+    // Create LFO
+    lfo = audioContext.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = lfoRate;
+    lfo.start(0);
+
+    lfoGain = audioContext.createGain();
+    lfoGain.gain.value = lfoDepth;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(filters[0].frequency);
 }
 
 window.onload = function () {
@@ -100,21 +126,32 @@ window.onload = function () {
                 let isStepActive = false;
                 for (let i = 0; i < 12; i++) {
                     if (stepSequencer[i][stepIndex]) {
-                        oscillator.frequency.value = calculateNoteFrequency(i);
-                        filterEnvelope();
+                        oscillators[i].frequency.value = calculateNoteFrequency(i);
+                        filterEnvelope(filters[i]); 
                         isStepActive = true;
                         break;
                     }
                 }
                 if (!isStepActive) {
-                    oscillator.frequency.value = 0;
+                    for (let i = 0; i < 12; i++) {
+                        oscillators[i].frequency.value = 0;
+                    }
                 }
                 stepIndex = (stepIndex + 1) % 16;
-
-                // Highlight the currently playing column
+    
                 highlightCurrentColumn();
-            }, 60000 / tempo);
+            }, (60000 / tempo)); 
         }
+    });
+    document.getElementById('lfo-rate').addEventListener('input', function () {
+        lfoRate = parseFloat(this.value);
+        lfo.frequency.value = lfoRate;
+    });
+
+
+    document.getElementById('lfo-depth').addEventListener('input', function () {
+        lfoDepth = parseFloat(this.value);
+        lfoGain.gain.value = lfoDepth;
     });
 
     function filterEnvelope() {
@@ -157,7 +194,6 @@ window.onload = function () {
                 }
                 stepIndex = (stepIndex + 1) % 16;
 
-                // Highlight the currently playing column
                 highlightCurrentColumn();
             }, 60000 / tempo);
             startStopButton.textContent = 'Stop';
@@ -168,17 +204,28 @@ window.onload = function () {
         }
     });
 
-    // Function to highlight the currently playing column
     function highlightCurrentColumn() {
         const allButtons = document.querySelectorAll('.step-button');
         allButtons.forEach(button => button.classList.remove('current-column'));
-
-        const scaleRows = document.querySelectorAll('.scale-row');
+    
         const currentStep = stepIndex % 16;
-
-        scaleRows.forEach((scaleRow) => {
-            const buttons = scaleRow.querySelectorAll('.step-button');
-            buttons[currentStep].classList.add('current-column');
+    
+        const scaleRows = document.querySelectorAll('.scale-row');
+        
+        // Use requestAnimationFrame for smoother updates
+        requestAnimationFrame(() => {
+            scaleRows.forEach((scaleRow) => {
+                const buttons = scaleRow.querySelectorAll('.step-button');
+                buttons[currentStep].classList.add('current-column');
+            });
+            
+            // Additional code to highlight the first column
+            if (currentStep === 0) {
+                scaleRows.forEach((scaleRow) => {
+                    const buttons = scaleRow.querySelectorAll('.step-button');
+                    buttons[15].classList.add('current-column');
+                });
+            }
         });
     }
 }
