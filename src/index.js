@@ -2,6 +2,7 @@ let audioContext = null;
 let sequence = [];
 let oscillator = null;
 let gainNode = null;
+let biquadFilter = null;
 let stepSequencer = [];
 
 let stepIndex = 0;
@@ -20,9 +21,12 @@ window.onload = function() {
 
     oscillator = audioContext.createOscillator();
     gainNode = audioContext.createGain();
+    biquadFilter = audioContext.createBiquadFilter();
+    biquadFilter.type = 'lowpass';
 
     oscillator.type = 'sawtooth';
-    oscillator.connect(gainNode);
+    oscillator.connect(biquadFilter);
+    biquadFilter.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
     const grid = document.getElementById('grid');
@@ -46,7 +50,9 @@ window.onload = function() {
 
     ['cutoff', 'resonance', 'envelope', 'decay', 'accent','frequency'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
-            if (this.value !== undefined) {
+            if (this.id === 'cutoff' || this.id === 'resonance') {
+                biquadFilter[this.id].value = parseFloat(this.value);
+            } else {
                 gainNode.gain.value = this.value;
             }
         });
@@ -70,9 +76,12 @@ window.onload = function() {
             startAudioContext();
             oscillator = audioContext.createOscillator();
             gainNode = audioContext.createGain();
+            biquadFilter = audioContext.createBiquadFilter();
+            biquadFilter.type = 'lowpass';
             oscillator.type = 'sawtooth';
-            oscillator.frequency.value = 0; // Set the frequency to 0
-            oscillator.connect(gainNode);
+            oscillator.frequency.value = 0;
+            oscillator.connect(biquadFilter);
+            biquadFilter.connect(gainNode);
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
             stepInterval = setInterval(() => {

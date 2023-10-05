@@ -6,26 +6,28 @@
     <label for="start-stop">Start/Stop</label>
     <button id="start-stop" onclick="startAudioContext()">Start</button>
 
-    <label for="cutoff">Cutoff</label>
-    <input id="cutoff" type="range" min="20" max="20000" value="1000">
+    <div id="controls">
+        <label for="cutoff">Cutoff:</label>
+        <input type="range" id="cutoff" min="0" max="100" value="50">
 
-    <label for="resonance">Resonance</label>
-    <input id="resonance" type="range" min="0" max="100" value="0">
+        <label for="resonance">Resonance:</label>
+        <input type="range" id="resonance" min="0" max="100" value="50">
 
-    <label for="envelope">Envelope</label>
-    <input id="envelope" type="range" min="0" max="1" value="0.5" step="0.01">
+        <label for="envelope">Envelope:</label>
+        <input type="range" id="envelope" min="0" max="100" value="50">
 
-    <label for="decay">Decay</label>
-    <input id="decay" type="range" min="0" max="1" value="0.5" step="0.01">
+        <label for="decay">Decay:</label>
+        <input type="range" id="decay" min="0" max="100" value="50">
 
-    <label for="accent">Accent</label>
-    <input id="accent" type="range" min="0" max="1" value="0.5" step="0.01">
+        <label for="accent">Accent:</label>
+        <input type="range" id="accent" min="0" max="100" value="50">
 
-    <label for="frequency">Frequency</label>
-    <input id="frequency" type="range" min="1" max="50000" value="440">
+        <label for="frequency">Frequency:</label>
+        <input type="range" id="frequency" min="0" max="100" value="50">
 
-    <label for="tempo">Tempo</label>
-    <input id="tempo" type="number" value="120">
+        <label for="tempo">Tempo:</label>
+        <input type="range" id="tempo" min="50" max="200" value="120">
+    </div>
 
     <div id="grid"></div>
     <script src="index.js"></script>
