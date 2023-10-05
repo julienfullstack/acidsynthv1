@@ -8,6 +8,7 @@ let stepSequencer = [];
 let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
+let swing = 0.01;
 
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -111,6 +112,33 @@ window.onload = function() {
             stepSequencer[i] = frequency;
         }
     });
+
+    // Initialize swing value
+
+    document.getElementById('swing').addEventListener('input', function() {
+        swing = parseFloat(this.value);
+    });
+
+    document.getElementById('tempo').addEventListener('input', function() {
+        if (this.value !== undefined) {
+            tempo = this.value;
+            clearInterval(stepInterval);
+            stepInterval = setInterval(() => {
+                const sequenceValue = sequence[stepIndex];
+                oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
+    
+                // Add a slight offset to every other beat
+                const offset = stepIndex % 2 === 0 ? swing : -swing; // Adjust the offset using the swing variable
+                const currentTime = audioContext.currentTime + offset;
+                filterEnvelope.gain.cancelScheduledValues(currentTime);
+                filterEnvelope.gain.setValueAtTime(filterEnvelope.gain.value, currentTime);
+                filterEnvelope.gain.linearRampToValueAtTime(1, currentTime + 0.05); // Attack time (adjust as needed)
+    
+                stepIndex = (stepIndex + 1) % stepSequencer.length;
+            }, 60000 / tempo);
+        }
+    });
+
     
     const startStopButton = document.getElementById('start-stop');
     startStopButton.addEventListener('click', function() {
