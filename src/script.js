@@ -42,23 +42,15 @@ window.onload = function () {
 
     const sequencerGrid = document.getElementById('sequencer-grid');
 
-    // Generate the 12x16 grid
     for (let i = 0; i < 12; i++) {
         const scaleRow = document.createElement('div');
         scaleRow.className = 'scale-row';
-
-        // Add a label for the scale
-        const scaleLabel = document.createElement('div');
-        scaleLabel.className = 'scale-label';
-        scaleLabel.textContent = 'Scale ' + (i + 1);
-        scaleRow.appendChild(scaleLabel);
 
         for (let j = 0; j < 16; j++) {
             const button = document.createElement('button');
             button.dataset.scale = i;
             button.dataset.step = j;
             button.className = 'step-button';
-            button.textContent = 'Step ' + (j + 1);
 
             button.addEventListener('click', function () {
                 const scale = parseInt(this.dataset.scale);
@@ -107,28 +99,26 @@ window.onload = function () {
                         oscillator.frequency.value = calculateNoteFrequency(i);
                         filterEnvelope();
                         isStepActive = true;
-                        break; //
+                        break;
                     }
                 }
                 if (!isStepActive) {
                     oscillator.frequency.value = 0;
                 }
-                stepIndex = (stepIndex + 1) % 16; 
+                stepIndex = (stepIndex + 1) % 16;
             }, 60000 / tempo);
         }
     });
 
     function filterEnvelope() {
-
         const baseFrequency = cutoff;
-        const maxFrequency = cutoff + accent * 10; // 
+        const maxFrequency = cutoff + accent * 10;
         filter.frequency.setValueAtTime(baseFrequency, audioContext.currentTime);
         filter.frequency.linearRampToValueAtTime(maxFrequency, audioContext.currentTime + decay / 1000);
         filter.frequency.linearRampToValueAtTime(baseFrequency, audioContext.currentTime + decay / 500);
     }
 
     function calculateNoteFrequency(scale) {
-     
         const scaleFrequencies = [
             261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25,
             587.33, 659.26, 698.46, 783.99
@@ -147,13 +137,13 @@ window.onload = function () {
                         oscillator.frequency.value = calculateNoteFrequency(i);
                         filterEnvelope();
                         isStepActive = true;
-                        break; 
+                        break;
                     }
                 }
                 if (!isStepActive) {
                     oscillator.frequency.value = 0;
                 }
-                stepIndex = (stepIndex + 1) % 16; 
+                stepIndex = (stepIndex + 1) % 16;
             }, 60000 / tempo);
             startStopButton.textContent = 'Stop';
         } else {
