@@ -23,11 +23,11 @@ function createTB303Sound() {
 
     oscillator = audioContext.createOscillator();
     filter = audioContext.createBiquadFilter();
-    filter.type = 'lowpass';
+    filter.type = 'lowpass'; // Use a lowpass filter
     filter.Q.value = resonance;
     filter.frequency.value = cutoff;
 
-    oscillator.type = 'sawtooth';
+    oscillator.type = 'sawtooth'; // Use a sawtooth waveform
     oscillator.connect(filter);
     filter.connect(audioContext.destination);
 
@@ -153,3 +153,4 @@ window.onload = function () {
         }
     });
 }
+
