@@ -9,6 +9,7 @@ let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
 let swing = 0.01;
+let scale = '1/8T';
 
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -95,10 +96,12 @@ window.onload = function() {
         }
     });
 
-    document.getElementById('tuning').addEventListener('input', function() {
-        const tuning = parseInt(this.value);
-    
-        // Apply tuning to each step in the sequence
+    document.getElementById('scale').addEventListener('change', function() {
+        scale = this.value;
+    });
+
+    document.getElementById('scale').addEventListener('input', function() {
+        const scale = parseInt(this.value);
         for (let i = 0; i < 16; i++) {
             const baseFrequency = 440; // Adjust the base frequency as needed
             const scaleFactors = [1, 1.0595, 1.1225, 1.1892, 1.2599]; // Adjust scale factors for your scale
@@ -112,6 +115,38 @@ window.onload = function() {
             stepSequencer[i] = frequency;
         }
     });
+
+ document.getElementById('tuning').addEventListener('input', function() {
+    const tuning = parseInt(this.value);
+
+    // Apply scale and tuning to each step in the sequence
+    for (let i = 0; i < 16; i++) {
+        const baseFrequency = 440; // Adjust the base frequency as needed
+        let frequency = baseFrequency;
+
+        // Apply scale
+        if (scale === '1/8T') {
+            const scaleFactors = [1, 1.2599, 1.3348, 1.4983, 1.5874]; // 1/8T scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        } else if (scale === '1/16T') {
+            const scaleFactors = [1, 1.2599, 1.3348, 1.5, 1.6612]; // 1/16T scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        } else if (scale === '1/16') {
+            const scaleFactors = [1, 1.4142, 1.7321, 2.0000, 2.4142]; // 1/16 scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        } else if (scale === '1/32') {
+            const scaleFactors = [1, 1.2599, 1.3864, 1.5874, 1.8171]; // 1/32 scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        }
+
+        // Apply tuning offset
+        frequency *= Math.pow(2, tuning / 12);
+
+        // Update the sequence and stepSequencer arrays
+        sequence[i] = frequency;
+        stepSequencer[i] = frequency;
+    }
+});
 
     // Initialize swing value
 
