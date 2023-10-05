@@ -1,9 +1,11 @@
 {
   "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack --mode development --watch",
+    "jshint": "jshint src"
   },
   "dependencies": {
-    "bootstrap": "^5.3.2",
-    "tone": "^14.7.77"
+    "bootstrap": "^5.3.2"
   },
   "devDependencies": {
     "webpack-cli": "^5.1.4"
