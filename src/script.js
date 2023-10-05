@@ -94,6 +94,24 @@ window.onload = function() {
         }
     });
 
+    document.getElementById('tuning').addEventListener('input', function() {
+        const tuning = parseInt(this.value);
+    
+        // Apply tuning to each step in the sequence
+        for (let i = 0; i < 16; i++) {
+            const baseFrequency = 440; // Adjust the base frequency as needed
+            const scaleFactors = [1, 1.0595, 1.1225, 1.1892, 1.2599]; // Adjust scale factors for your scale
+            let frequency = baseFrequency * scaleFactors[i % scaleFactors.length];
+    
+            // Apply tuning offset
+            frequency *= Math.pow(2, tuning / 12);
+    
+            // Update the sequence and stepSequencer arrays
+            sequence[i] = frequency;
+            stepSequencer[i] = frequency;
+        }
+    });
+    
     const startStopButton = document.getElementById('start-stop');
     startStopButton.addEventListener('click', function() {
         if (startStopButton.textContent === 'Start') {
