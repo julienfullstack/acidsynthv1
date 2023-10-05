@@ -6,6 +6,7 @@ let stepSequencer = [];
 
 let stepIndex = 0;
 let stepInterval = null;
+let tempo = 120;
 
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -30,8 +31,7 @@ window.onload = function() {
         button.textContent = 'Step ' + (i + 1);
         button.addEventListener('click', function() {
             const step = i;
-            const frequencyInputElement= document.getElementById('frequency');
-            const frequency = frequencyInputElement.value;
+            const frequency = audioContext.frequencyToLogarithm ? audioContext.frequencyToLogarithm('C4') : 261.63; 
             if (sequence[step] === frequency) {
                 sequence[step] = null;
                 button.style.backgroundColor = '';
@@ -44,7 +44,7 @@ window.onload = function() {
         grid.appendChild(button);
     }
 
-    ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
+    ['cutoff', 'resonance', 'envelope', 'decay', 'accent','frequency'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.value !== undefined) {
                 gainNode.gain.value = this.value;
@@ -52,9 +52,21 @@ window.onload = function() {
         });
     });
 
+    document.getElementById('tempo').addEventListener('input', function() {
+        if (this.value !== undefined) {
+            tempo = this.value;
+            clearInterval(stepInterval);
+            stepInterval = setInterval(() => {
+                const sequenceValue = sequence[stepIndex];
+                oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
+                stepIndex = (stepIndex + 1) % stepSequencer.length;
+            }, 60000/tempo); 
+        }
+    });
+
     const startStopButton = document.getElementById('start-stop');
     startStopButton.addEventListener('click', function() {
-        if (startStopButton.textContent === 'Start' && stepSequencer.some(value => value !== null)) {
+        if (startStopButton.textContent === 'Start') {
             startAudioContext();
             oscillator = audioContext.createOscillator();
             gainNode = audioContext.createGain();
@@ -62,18 +74,15 @@ window.onload = function() {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
-
             stepInterval = setInterval(() => {
                 const sequenceValue = sequence[stepIndex];
                 oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
                 stepIndex = (stepIndex + 1) % stepSequencer.length;
-            }, 500); 
+            }, 60000/tempo); 
             startStopButton.textContent = 'Stop';
         } else {
             clearInterval(stepInterval);
-            if (oscillator) {
-                oscillator.stop(0);
-            }
+            oscillator.stop(0);
             startStopButton.textContent = 'Start';
         }
     });
