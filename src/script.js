@@ -23,14 +23,20 @@ window.onload = function() {
     gainNode = audioContext.createGain();
     filter = audioContext.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.Q.value = 2; 
+    filter.Q.value = 8; // Increase resonance (Q) for a more intense squelchy sound
 
-    oscillator.type = 'sawtooth'; 
-    oscillator.detune.setValueAtTime(-24, audioContext.currentTime); 
+    oscillator.type = 'sawtooth'; // Use a sawtooth waveform
+    oscillator.detune.setValueAtTime(-24, audioContext.currentTime); // Detune oscillator for character
+    oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // Start with a low frequency
 
     oscillator.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(audioContext.destination);
+
+    // Apply filter envelope for a typical acid bassline
+    const filterEnvelope = audioContext.createGain();
+    filterEnvelope.gain.value = 0; // Initialize envelope gain to 0
+    filterEnvelope.connect(filter.frequency);
 
     const grid = document.getElementById('grid');
     for (let i = 0; i < 16; i++) {
@@ -39,13 +45,26 @@ window.onload = function() {
         button.addEventListener('click', function() {
             const step = i;
             const frequency = 440 * Math.pow(2, (step - 9) / 12); // Convert step to frequency
+
             if (sequence[step] === frequency) {
                 sequence[step] = null;
                 button.style.backgroundColor = '';
+
+                // Release the envelope when the button is turned off
+                const currentTime = audioContext.currentTime;
+                filterEnvelope.gain.cancelScheduledValues(currentTime);
+                filterEnvelope.gain.setValueAtTime(filterEnvelope.gain.value, currentTime);
+                filterEnvelope.gain.linearRampToValueAtTime(0, currentTime + 0.3); // Release time (adjust as needed)
             } else {
                 sequence[step] = frequency;
                 stepSequencer[step] = frequency;
                 button.style.backgroundColor = 'blue';
+
+                // Trigger the envelope when the button is turned on
+                const currentTime = audioContext.currentTime;
+                filterEnvelope.gain.cancelScheduledValues(currentTime);
+                filterEnvelope.gain.setValueAtTime(filterEnvelope.gain.value, currentTime);
+                filterEnvelope.gain.linearRampToValueAtTime(1, currentTime + 0.05); // Attack time (adjust as needed)
             }
         });
         grid.appendChild(button);
@@ -83,9 +102,10 @@ window.onload = function() {
             gainNode = audioContext.createGain();
             filter = audioContext.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.Q.value = 1.0;
+            filter.Q.value = 8; // Increase resonance (Q)
             oscillator.type = 'sawtooth';
-            oscillator.frequency.value = 0;
+            oscillator.detune.setValueAtTime(-24, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
             oscillator.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
