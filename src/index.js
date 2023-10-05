@@ -71,6 +71,7 @@ window.onload = function() {
             oscillator = audioContext.createOscillator();
             gainNode = audioContext.createGain();
             oscillator.type = 'sawtooth';
+            oscillator.frequency.value = 0; // Set the frequency to 0
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
