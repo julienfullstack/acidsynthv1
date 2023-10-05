@@ -43,7 +43,7 @@ window.onload = function() {
         grid.appendChild(button);
     }
 
-    ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
+    ['cutoff', 'resonance', 'envelope', 'decay', 'accent','frequency'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.value !== undefined) {
                 gainNode.gain.value = this.value;

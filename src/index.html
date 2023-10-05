@@ -3,12 +3,27 @@
 <head>
 </head>
 <body>
+    <label for="start-stop">Start/Stop</label>
     <button id="start-stop" onclick="startAudioContext()">Start</button>
+
+    <label for="cutoff">Cutoff</label>
     <input id="cutoff" type="range" min="20" max="20000" value="1000">
+
+    <label for="resonance">Resonance</label>
     <input id="resonance" type="range" min="0" max="100" value="0">
+
+    <label for="envelope">Envelope</label>
     <input id="envelope" type="range" min="0" max="1" value="0.5" step="0.01">
+
+    <label for="decay">Decay</label>
     <input id="decay" type="range" min="0" max="1" value="0.5" step="0.01">
-    <input id="accent" type="range" min="0" max="1" value="0.5" step="0.01">
+
+    <label for="accent">Accent</label>
+    <input id="accent" type="range" min="0" max="1" value="0.5" step="0.01"> 
+
+    <label for="frequency">Frequency</label>
+    <input id="frequency" type="range" min="20" max="20000" value="440">
+
     <div id="grid"></div>
     <script src="index.js"></script>
 </body>
