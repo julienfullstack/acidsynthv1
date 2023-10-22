@@ -12,9 +12,8 @@ let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
 let swing = 0.01;
-let constantFrequency = true;
+let scale = '1/8T';
 
-// Function to start the audio context
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') {
@@ -30,7 +29,7 @@ function initAudio() {
     gainNode = audioContext.createGain();
     filter = audioContext.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.Q.value = 20; // Increase resonance (Q) for a more intense squelchy sound
+    filter.Q.value = 8; // Increase resonance (Q) for a more intense squelchy sound
 
     oscillator.type = 'sawtooth'; // Use a sawtooth waveform
     oscillator.detune.setValueAtTime(-24, audioContext.currentTime); // Detune oscillator for character
@@ -78,7 +77,6 @@ function initAudio() {
         grid.appendChild(button);
     }
 
-    // Create event listeners for audio parameter controls
     ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.id === 'cutoff') {
@@ -104,31 +102,84 @@ function initAudio() {
         }
     });
 
-    // Create event listener for tuning control
-    document.getElementById('tuning').addEventListener('input', function() {
-        const tuning = parseInt(this.value);
+    document.getElementById('scale').addEventListener('change', function() {
+        scale = this.value;
+    });
 
-        // Apply tuning to each step in the sequence
+    document.getElementById('scale').addEventListener('input', function() {
+        const scale = parseInt(this.value);
         for (let i = 0; i < 16; i++) {
             const baseFrequency = 440; // Adjust the base frequency as needed
             const scaleFactors = [1, 1.0595, 1.1225, 1.1892, 1.2599]; // Adjust scale factors for your scale
             let frequency = baseFrequency * scaleFactors[i % scaleFactors.length];
-
+    
             // Apply tuning offset
             frequency *= Math.pow(2, tuning / 12);
-
+    
             // Update the sequence and stepSequencer arrays
             sequence[i] = frequency;
             stepSequencer[i] = frequency;
         }
     });
 
+ document.getElementById('tuning').addEventListener('input', function() {
+    const tuning = parseInt(this.value);
+
+    // Apply scale and tuning to each step in the sequence
+    for (let i = 0; i < 16; i++) {
+        const baseFrequency = 440; // Adjust the base frequency as needed
+        let frequency = baseFrequency;
+
+        // Apply scale
+        if (scale === '1/8T') {
+            const scaleFactors = [1, 1.2599, 1.3348, 1.4983, 1.5874]; // 1/8T scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        } else if (scale === '1/16T') {
+            const scaleFactors = [1, 1.2599, 1.3348, 1.5, 1.6612]; // 1/16T scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        } else if (scale === '1/16') {
+            const scaleFactors = [1, 1.4142, 1.7321, 2.0000, 2.4142]; // 1/16 scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        } else if (scale === '1/32') {
+            const scaleFactors = [1, 1.2599, 1.3864, 1.5874, 1.8171]; // 1/32 scale
+            frequency *= scaleFactors[i % scaleFactors.length];
+        }
+
+        // Apply tuning offset
+        frequency *= Math.pow(2, tuning / 12);
+
+        // Update the sequence and stepSequencer arrays
+        sequence[i] = frequency;
+        stepSequencer[i] = frequency;
+    }
+});
+
     // Create event listener for swing control
     document.getElementById('swing').addEventListener('input', function() {
         swing = parseFloat(this.value);
     });
 
-    // Create event listener for start/stop button
+    document.getElementById('tempo').addEventListener('input', function() {
+        if (this.value !== undefined) {
+            tempo = this.value;
+            clearInterval(stepInterval);
+            stepInterval = setInterval(() => {
+                const sequenceValue = sequence[stepIndex];
+                oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
+    
+                // Add a slight offset to every other beat
+                const offset = stepIndex % 2 === 0 ? swing : -swing; // Adjust the offset using the swing variable
+                const currentTime = audioContext.currentTime + offset;
+                filterEnvelope.gain.cancelScheduledValues(currentTime);
+                filterEnvelope.gain.setValueAtTime(filterEnvelope.gain.value, currentTime);
+                filterEnvelope.gain.linearRampToValueAtTime(1, currentTime + 0.05); // Attack time (adjust as needed)
+    
+                stepIndex = (stepIndex + 1) % stepSequencer.length;
+            }, 60000 / tempo);
+        }
+    });
+
+    
     const startStopButton = document.getElementById('start-stop');
     let currentOscillators = Array(16).fill(null);
 
@@ -149,10 +200,10 @@ function initAudio() {
             gainNode = audioContext.createGain();
             filter = audioContext.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.Q.value = 20; // Increase resonance (Q)
+            filter.Q.value = 8; // Increase resonance (Q)
             oscillator.type = 'sawtooth';
             oscillator.detune.setValueAtTime(-24, audioContext.currentTime);
-            oscillator.frequency.setValueAtTime(0, audioContext.currentTime); // Set initial frequency to 0
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
             oscillator.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
