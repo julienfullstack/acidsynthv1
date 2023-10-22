@@ -15,7 +15,12 @@ function startAudioContext() {
     if (audioContext.state === 'suspended') {
         audioContext.resume();
     }
+
+    // Initialize oscillator frequency to 0
+    oscillator = audioContext.createOscillator();
+    oscillator.frequency.setValueAtTime(0, audioContext.currentTime);
 }
+
 
 window.onload = function() {
     startAudioContext();
@@ -38,6 +43,7 @@ window.onload = function() {
     const filterEnvelope = audioContext.createGain();
     filterEnvelope.gain.value = 0; // Initialize envelope gain to 0
     filterEnvelope.connect(filter.frequency);
+    
 
     const grid = document.getElementById('grid');
     for (let i = 0; i < 16; i++) {
@@ -151,14 +157,17 @@ window.onload = function() {
             filter.Q.value = 15; // Increase resonance (Q)
             oscillator.type = 'sawtooth';
             oscillator.detune.setValueAtTime(-24, audioContext.currentTime);
-            oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(0, audioContext.currentTime); // Set initial frequency to 0
             oscillator.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
             stepInterval = setInterval(() => {
                 const sequenceValue = sequence[stepIndex];
-                oscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
+                const stepSequencerValue = stepSequencer[stepIndex];
+                if (stepSequencerValue !== undefined && stepSequencerValue !== 0) { // Only set frequency if step is toggled on
+                    oscillator.frequency.setValueAtTime(stepSequencerValue, audioContext.currentTime);
+                }
                 stepIndex = (stepIndex + 1) % stepSequencer.length;
             }, 60000 / tempo);
             startStopButton.textContent = 'Stop';
