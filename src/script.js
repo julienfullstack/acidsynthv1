@@ -163,10 +163,12 @@ window.onload = function() {
             gainNode.connect(audioContext.destination);
             oscillator.start(0);
             stepInterval = setInterval(() => {
-                const sequenceValue = sequence[stepIndex];
                 const stepSequencerValue = stepSequencer[stepIndex];
                 if (stepSequencerValue !== undefined && stepSequencerValue !== 0) { // Only set frequency if step is toggled on
-                    oscillator.frequency.setValueAtTime(stepSequencerValue, audioContext.currentTime);
+                    const sequenceValue = sequence[stepIndex];
+                    if (sequenceValue !== undefined && sequenceValue !== 0) { // Only play if step is toggled on
+                        oscillator.frequency.setValueAtTime(sequenceValue, audioContext.currentTime);
+                    }
                 }
                 stepIndex = (stepIndex + 1) % stepSequencer.length;
             }, 60000 / tempo);
