@@ -9,7 +9,8 @@ let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
 let swing = 0.01;
-let scale = '1/8T';
+
+let playingSteps = [];
 
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -25,7 +26,7 @@ window.onload = function() {
     gainNode = audioContext.createGain();
     filter = audioContext.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.Q.value = 8; // Increase resonance (Q) for a more intense squelchy sound
+    filter.Q.value = 20; // Increase resonance (Q) for a more intense squelchy sound
 
     oscillator.type = 'sawtooth'; // Use a sawtooth waveform
     oscillator.detune.setValueAtTime(-24, audioContext.currentTime); // Detune oscillator for character
@@ -72,6 +73,30 @@ window.onload = function() {
         grid.appendChild(button);
     }
 
+    stepInterval = setInterval(() => {
+        const sequenceValue = sequence[stepIndex];
+        
+        if (playingSteps.length > 0) {
+            // Check if there are active steps
+            if (!currentOscillator) {
+                // Create a new oscillator if none exists
+                currentOscillator = audioContext.createOscillator();
+                currentOscillator.type = 'sawtooth';
+                currentOscillator.connect(filter);
+                currentOscillator.start(0);
+            }
+            
+            // Set the frequency
+            currentOscillator.frequency.value = sequenceValue !== undefined ? sequenceValue : 0;
+        } else if (currentOscillator) {
+            // Stop the current oscillator if no active steps
+            currentOscillator.stop(0);
+            currentOscillator = null;
+        }
+        
+        stepIndex = (stepIndex + 1) % stepSequencer.length;
+    }, 60000 / tempo);
+
     ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.id === 'cutoff') {
@@ -95,13 +120,11 @@ window.onload = function() {
             }, 60000 / tempo);
         }
     });
-
-    document.getElementById('scale').addEventListener('change', function() {
-        scale = this.value;
-    });
-
-    document.getElementById('scale').addEventListener('input', function() {
-        const scale = parseInt(this.value);
+ 
+    document.getElementById('tuning').addEventListener('input', function() {
+        const tuning = parseInt(this.value);
+    
+        // Apply tuning to each step in the sequence
         for (let i = 0; i < 16; i++) {
             const baseFrequency = 440; // Adjust the base frequency as needed
             const scaleFactors = [1, 1.0595, 1.1225, 1.1892, 1.2599]; // Adjust scale factors for your scale
@@ -116,43 +139,12 @@ window.onload = function() {
         }
     });
 
- document.getElementById('tuning').addEventListener('input', function() {
-    const tuning = parseInt(this.value);
-
-    // Apply scale and tuning to each step in the sequence
-    for (let i = 0; i < 16; i++) {
-        const baseFrequency = 440; // Adjust the base frequency as needed
-        let frequency = baseFrequency;
-
-        // Apply scale
-        if (scale === '1/8T') {
-            const scaleFactors = [1, 1.2599, 1.3348, 1.4983, 1.5874]; // 1/8T scale
-            frequency *= scaleFactors[i % scaleFactors.length];
-        } else if (scale === '1/16T') {
-            const scaleFactors = [1, 1.2599, 1.3348, 1.5, 1.6612]; // 1/16T scale
-            frequency *= scaleFactors[i % scaleFactors.length];
-        } else if (scale === '1/16') {
-            const scaleFactors = [1, 1.4142, 1.7321, 2.0000, 2.4142]; // 1/16 scale
-            frequency *= scaleFactors[i % scaleFactors.length];
-        } else if (scale === '1/32') {
-            const scaleFactors = [1, 1.2599, 1.3864, 1.5874, 1.8171]; // 1/32 scale
-            frequency *= scaleFactors[i % scaleFactors.length];
-        }
-
-        // Apply tuning offset
-        frequency *= Math.pow(2, tuning / 12);
-
-        // Update the sequence and stepSequencer arrays
-        sequence[i] = frequency;
-        stepSequencer[i] = frequency;
-    }
-});
-
     // Initialize swing value
 
     document.getElementById('swing').addEventListener('input', function() {
         swing = parseFloat(this.value);
     });
+    
 
     document.getElementById('tempo').addEventListener('input', function() {
         if (this.value !== undefined) {
@@ -183,10 +175,10 @@ window.onload = function() {
             gainNode = audioContext.createGain();
             filter = audioContext.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.Q.value = 8; // Increase resonance (Q)
+            filter.Q.value = 20; // Increase resonance (Q)
             oscillator.type = 'sawtooth';
             oscillator.detune.setValueAtTime(-24, audioContext.currentTime);
-            oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(0, audioContext.currentTime); // Set initial frequency to 0
             oscillator.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
