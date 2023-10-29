@@ -10,6 +10,7 @@ let stepInterval = null;
 let tempo = 120;
 
 
+
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') {
@@ -20,7 +21,9 @@ function startAudioContext() {
     oscillator = audioContext.createOscillator();
     oscillator.frequency.setValueAtTime(0, audioContext.currentTime);
 }
-
+let mediaStreamDestination = null;
+let mediaRecorder = null;
+let audioChunks = []; 
 
 window.onload = function() {
     startAudioContext();
@@ -44,7 +47,7 @@ window.onload = function() {
     filterEnvelope.gain.value = 0; // Initialize envelope gain to 0
     filterEnvelope.connect(filter.frequency);
     
-
+    
     const grid = document.getElementById('grid');
     for (let i = 0; i < 16; i++) {
         const button = document.createElement('button');
@@ -77,6 +80,7 @@ window.onload = function() {
         grid.appendChild(button);
     }
 
+    
     ['cutoff', 'resonance', 'envelope', 'decay', 'accent', 'distortion'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.id === 'cutoff') {
@@ -192,9 +196,42 @@ window.onload = function() {
         }
     });
 
-    
+    mediaStreamDestination = audioContext.createMediaStreamDestination();
+
+    // Connect your audio nodes to mediaStreamDestination
+    gainNode.connect(mediaStreamDestination);
+
+    // Create the MediaRecorder with the stream from mediaStreamDestination
+    mediaRecorder = new MediaRecorder(mediaStreamDestination.stream);
 
 
+    const recordingButton = document.getElementById('recording-button');
 
+async function recordAudio() {
+    if (mediaRecorder.state === 'inactive') {
+        mediaRecorder.start();
+        recordingButton.textContent = 'Stop Recording';
+    } else if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        recordingButton.textContent = 'Start Recording';
+    }
 }
+
+    mediaRecorder = new MediaRecorder(mediaStreamDestination.stream);
+
+    mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+            audioChunks.push(e.data);
+        }
+    };
+
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        console.log(audioUrl);
+        audioChunks = []; // Clear the chunks for the next recording
+    };
+
+    recordingButton.addEventListener('click', recordAudio);
+};
     
