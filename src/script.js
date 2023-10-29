@@ -10,6 +10,7 @@ let stepInterval = null;
 let tempo = 120;
 let swing = 0.01;
 
+
 function startAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') {
@@ -77,7 +78,7 @@ window.onload = function() {
         grid.appendChild(button);
     }
 
-    ['cutoff', 'resonance', 'envelope', 'decay', 'accent'].forEach(control => {
+    ['cutoff', 'resonance', 'envelope', 'decay', 'accent', 'distortion'].forEach(control => {
         document.getElementById(control).addEventListener('input', function() {
             if (this.id === 'cutoff') {
                 filter.frequency.value = parseFloat(this.value) * 4000; // Adjust cutoff frequency
@@ -88,6 +89,28 @@ window.onload = function() {
             }
         });
     });
+
+    function makeDistortionCurve(amount){
+        var k = typeof amount === 'number',
+            n_samples = 44100,
+            curve = new Float32Array(n_samples),
+            deg = Math.PI / 180,
+            i = 0,
+            x;
+        for ( ; i < n_samples; ++i ) {
+            x = i * 2 / n_samples - 1;
+            curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+        }
+        return curve;
+    }
+
+    // document.getElementById('distortion').addEventListener('input', function() {
+    //     let distortion = audioContext.createWaveShaper();
+    //     oscillator.connect(distortion);
+    //     distortion.connect(filter);
+    //     distortion.curve = makeDistortionCurve(this.value);
+    // });
+            
 
     document.getElementById('tempo').addEventListener('input', function() {
         if (this.value !== undefined) {
@@ -179,6 +202,10 @@ window.onload = function() {
             startStopButton.textContent = 'Start';
         }
     });
+
+    
+
+
 
 }
     
