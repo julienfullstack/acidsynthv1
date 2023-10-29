@@ -8,7 +8,6 @@ let stepSequencer = [];
 let stepIndex = 0;
 let stepInterval = null;
 let tempo = 120;
-let swing = 0.01;
 
 
 function startAudioContext() {
@@ -117,28 +116,7 @@ window.onload = function() {
         }
     });
 
-
-    const scaleFactorMappings = {
-        "1/8T": [1, 1.0595, 1.1225, 1.1892, 1.2599, 1.3220, 1.3858, 1.4414],
-        "1/16T": [1, 1.025, 1.05, 1.075, 1.1, 1.125, 1.15, 1.175, 1.2, 1.225, 1.25, 1.275, 1.3, 1.325, 1.35, 1.375, 1.4],
-        "1/16": [1, 1.0595, 1.1225, 1.1892, 1.2599, 1.3220, 1.3858, 1.4414, 1.5, 1.5595, 1.6225, 1.6892, 1.7599, 1.8220, 1.8858, 1.9414],
-        "1/32": [1, 1.025, 1.05, 1.075, 1.1, 1.125, 1.15, 1.175, 1.2, 1.225, 1.25, 1.275, 1.3, 1.325, 1.35, 1.375, 1.4, 1.45, 1.475, 1.5, 1.525, 1.55, 1.575, 1.6, 1.625, 1.65, 1.675, 1.7, 1.725, 1.75, 1.775, 1.8],
-    };
-
-    document.getElementById('scale').addEventListener('change', function() {
-        const selectedScale = this.value;
-        const scaleFactors = scaleFactorMappings[selectedScale];
-    
-        // Apply the new scale factors to each step in the sequence
-        for (let i = 0; i < 16; i++) {
-            const baseFrequency = 220; // Adjust the base frequency as needed
-            let frequency = baseFrequency * scaleFactors[i % scaleFactors.length];
-    
-            // Update the sequence and stepSequencer arrays
-            sequence[i] = frequency;
-            stepSequencer[i] = frequency;
-        }
-    });    
+  
 
     document.getElementById('tuning').addEventListener('input', function() {
         const tuning = parseInt(this.value);
@@ -158,11 +136,6 @@ window.onload = function() {
         }
     });
 
-    // Initialize swing value
-
-    document.getElementById('swing').addEventListener('input', function() {
-        swing = parseFloat(this.value);
-    });
 
     document.getElementById('tempo').addEventListener('input', function() {
         if (this.value !== undefined) {
