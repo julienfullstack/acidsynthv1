@@ -2,7 +2,7 @@ Name of Student: Julien L
 
 Name of Project: Julien's 303
 
-Project's Purpose or Goal: (What will it do for users?) To emulate the TB 303 Drum Machine
+Project's Purpose or Goal: (What will it do for users?) To emulate the Roland TB 303 Drum Machine
 
 List the absolute minimum features the project requires to meet this purpose or goal:
 1. Step sequencer with 16 steps
