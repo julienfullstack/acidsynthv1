@@ -46,7 +46,7 @@ window.onload = function() {
 
     // Apply filter envelope for a typical acid bassline
     const filterEnvelope = audioContext.createGain();
-    filterEnvelope.gain.value = 0; // Initialize envelope gain to 0
+    filterEnvelope.gain.value = 0; 
     filterEnvelope.connect(filter.frequency);
     
     
